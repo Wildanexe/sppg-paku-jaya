@@ -58,6 +58,9 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Rute Baru untuk Halaman Rekapitulasi (Recap)
+    Route::get('/recap', [TransactionController::class, 'recap'])->name('transactions.recap');
+
     Route::resource('categories', CategoryController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('materials', MaterialController::class);

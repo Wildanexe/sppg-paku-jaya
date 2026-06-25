@@ -15,13 +15,33 @@ class TransactionController extends Controller
      * Tampilkan riwayat transaksi dan form pengambilan barang.
      */
     public function index()
-{
-    // Tambahkan with('stockBatches') biar datanya langsung ditarik sekaligus
-    $materials = Material::with('stockBatches')->get();
-    $transactions = Transaction::with('stockBatch.material')->latest()->get();
+    {
+        $materials = Material::with('stockBatches')->get();
+        $transactions = Transaction::with(['stockBatch.material', 'user'])->latest()->get();
 
-    return view('transactions.index', compact('materials', 'transactions'));
-}
+        return view('transactions.index', compact('materials', 'transactions'));
+    }
+
+    /**
+     * FITUR REKAPITULASI & BUDGETING (Dikelompokkan Per Bulan)
+     */
+    public function recap()
+    {
+        // Mengambil data dan menghitung total spend (sementara pakai initial_quantity agar tidak error kolom price)
+        $recap = DB::table('stock_batches')
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%M %Y') as month"),
+                DB::raw("SUM(initial_quantity) as total_spend"),
+                DB::raw("COUNT(id) as total_batch")
+            )
+            ->whereYear('created_at', date('Y'))
+            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%M %Y')"), DB::raw("YEAR(created_at)"), DB::raw("MONTH(created_at)"))
+            ->orderBy(DB::raw("MONTH(created_at)"), 'asc')
+            ->get();
+
+        // Mengarah ke folder views/recap/index.blade.php
+        return view('recap.index', compact('recap'));
+    }
 
     /**
      * PROSES BARANG KELUAR (LOGIKA FEFO)
@@ -36,7 +56,6 @@ class TransactionController extends Controller
         $materialId = $request->material_id;
         $requestedQty = $request->quantity;
 
-        // Ambil batch stok urut expired terdekat (FEFO)
         $batches = StockBatch::where('material_id', $materialId)
                             ->where('current_quantity', '>', 0)
                             ->orderBy('expiry_date', 'asc')
@@ -75,15 +94,13 @@ class TransactionController extends Controller
     }
 
     /**
-     * FITUR HAPUS TRANSAKSI (Guna meminimalisir salah input)
-     * Otomatis mengembalikan stok ke batch asal.
+     * FITUR HAPUS TRANSAKSI
      */
     public function destroy($id)
     {
         DB::transaction(function () use ($id) {
             $transaction = Transaction::findOrFail($id);
 
-            // LOGIKA PENTING: Jika hapus barang keluar, kembalikan stok ke batch-nya
             if ($transaction->type == 'out') {
                 $batch = StockBatch::find($transaction->stock_batch_id);
                 if ($batch) {

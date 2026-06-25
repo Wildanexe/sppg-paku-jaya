@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -18,7 +15,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Get the attributes that should be cast.
+     * Atribut yang dapat diisi secara massal (Mass Assignable).
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role', // Kolom role terdaftar di sini agar bisa diinput
+    ];
+
+    /**
+     * Mengatur tipe data (casting) untuk atribut tertentu.
      *
      * @return array<string, string>
      */
@@ -26,13 +35,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password' => 'hashed', // Password otomatis di-hash saat disimpan via Eloquent
         ];
     }
-    protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'role', // TAMBAHKAN INI KALAU BELUM ADA
-];
 }
