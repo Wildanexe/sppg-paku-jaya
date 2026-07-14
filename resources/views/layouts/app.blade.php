@@ -61,7 +61,7 @@
 <body>
     <div class="sidebar">
         <h2>SPPG PAKU JAYA</h2>
-        <a href="/" class="{{ Request::is('/') ? 'active' : '' }}"><i class="fas fa-th-large"></i> Beranda</a>
+        <a href="/dashboard" class="{{ Request::is('dashboard') ? 'active' : '' }}"><i class="fas fa-th-large"></i> Beranda</a>
         <a href="/categories" class="{{ Request::is('categories*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Kategori Bahan</a>
         <a href="/suppliers" class="{{ Request::is('suppliers*') ? 'active' : '' }}"><i class="fas fa-store"></i> Supplier</a>
         <a href="/materials" class="{{ Request::is('materials*') ? 'active' : '' }}"><i class="fas fa-boxes-stacked"></i> Master Bahan</a>
@@ -99,7 +99,7 @@
 
     <div class="main-content">
         <div class="topbar">
-            <div class="title">Inventory Control System</div>
+            <div class="title">TAI System</div>
             <div class="logo-container" style="display: flex; align-items: center; gap: 15px;">
                 <img src="{{ asset('logo_bgn.jpg') }}" class="logo-sppg" alt="Logo SPPG">
             </div>

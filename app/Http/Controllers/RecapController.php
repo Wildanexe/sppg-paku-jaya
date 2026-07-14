@@ -11,29 +11,32 @@ class RecapController extends Controller
 {
     /**
      * Menampilkan laporan rekapitulasi bulanan dan budgeting.
-     * Hanya bisa diakses oleh Ketua dan Sekretaris.
      */
     public function index()
     {
-        // 1. Keamanan Akses: Proteksi Role
+        // 1. Proteksi Akses
         if (!Auth::check() || Auth::user()->role == 'staff') {
             abort(403, 'Akses Ditolak: Halaman ini khusus untuk Ketua atau Sekretaris SPPG.');
         }
 
-        // 2. Query Data: Menggunakan selectRaw agar lebih bersih
-        // Kita masukkan MONTH(received_date) ke SELECT agar bisa masuk ke GROUP BY
+        // 2. Query Hitung Pengeluaran Bulanan secara Dinamis
         $recap = StockBatch::selectRaw('
-                MONTH(received_date) as month_num,
-                MONTHNAME(received_date) as month,
+                MONTH(COALESCE(received_date, created_at)) as month_num,
+                MONTHNAME(COALESCE(received_date, created_at)) as month,
                 SUM(initial_quantity * price_per_unit) as total_spend,
                 COUNT(*) as total_batch
             ')
-            ->whereYear('received_date', date('Y'))
-            ->groupBy('month_num', 'month') // Harus masuk dua-duanya biar nggak error
-            ->orderBy('month_num', 'asc')   // Urutkan berdasarkan angka bulan (1-12)
+            ->whereYear(DB::raw('COALESCE(received_date, created_at)'), date('Y'))
+            ->groupBy('month_num', 'month')
+            ->orderBy('month_num', 'asc')
             ->get();
 
-        // 3. Kirim data ke view
-        return view('recap.index', compact('recap'));
+        // 3. Kalkulasi Total untuk Kartu Dasbor
+        $totalPengeluaran = $recap->sum('total_spend');
+        $anggaranDasar = 500000000; // Anggaran 500 Juta SPPG Paku Jaya
+        $sisaAnggaran = $anggaranDasar - $totalPengeluaran;
+
+        // 4. Lempar data ke view (Pastikan compact berisi 3 variabel ini!)
+        return view('recap.index', compact('recap', 'totalPengeluaran', 'sisaAnggaran'));
     }
 }

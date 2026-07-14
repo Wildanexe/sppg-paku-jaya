@@ -10,7 +10,11 @@
         .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(14, 165, 233, 0.1); }
         .logo-bgn { height: 80px; margin-bottom: 20px; }
         h2 { color: #0369a1; margin-bottom: 10px; font-size: 1.4rem; }
-        p { color: #64748b; font-size: 0.9rem; margin-bottom: 30px; }
+        p { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+
+        /* CSS untuk pesan error */
+        .alert-error { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 20px; text-align: left; }
+
         .form-group { text-align: left; margin-bottom: 20px; }
         label { display: block; font-size: 0.85rem; color: #1e293b; margin-bottom: 8px; font-weight: 600; }
         input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; outline: none; transition: 0.3s; }
@@ -22,8 +26,14 @@
 <body>
     <div class="login-card">
         <img src="{{ asset('logo_bgn.jpg') }}" class="logo-bgn" alt="Logo BGN">
-        <h2>Inventory Control</h2>
+        <h2>ASU Control</h2>
         <p>SPPG Paku Jaya - Kota Tangerang</p>
+
+        @if ($errors->any())
+            <div class="alert-error">
+                Email atau password yang Anda masukkan salah.
+            </div>
+        @endif
 
         <form action="{{ route('login') }}" method="POST">
             @csrf
